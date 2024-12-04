@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:subul_g1_todo_app/resources/colors_palette.dart';
 import 'package:subul_g1_todo_app/resources/text_styles.dart';
+import 'package:subul_g1_todo_app/screens/add_task_scree.dart';
+import 'package:subul_g1_todo_app/screens/home_screen.dart';
 import 'package:subul_g1_todo_app/screens/landing_screen.dart';
 
 void main() {
@@ -15,8 +18,14 @@ class MyApp extends StatelessWidget {
       debugShowCheckedModeBanner: false,
       title: 'Subul TO DO App',
       theme: ThemeData(
-        // textTheme: TextTheme(titleLarge: AppTextStyles.largeTextStyle),
-
+        fontFamily: 'Poppins',
+        inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: ColorsPalette.whiteColor,
+            contentPadding: EdgeInsets.symmetric(vertical: 22, horizontal: 12),
+            border: OutlineInputBorder(
+                borderSide: BorderSide.none,
+                borderRadius: BorderRadius.circular(18))),
         elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
                 foregroundColor: Colors.black,
@@ -32,7 +41,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const LandingScreen(),
+      home: const HomeScreen(),
     );
   }
 }
