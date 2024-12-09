@@ -9,7 +9,8 @@ import 'package:subul_g1_todo_app/resources/text_styles.dart';
 import 'package:subul_g1_todo_app/screens/home_screen.dart';
 
 class AddTaskScreen extends StatefulWidget {
-  const AddTaskScreen({super.key});
+  TaskModel? editedTask;
+  AddTaskScreen({super.key, this.editedTask});
 
   @override
   State<AddTaskScreen> createState() => _AddTaskScreenState();
@@ -41,6 +42,22 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   final TextEditingController taskDateController = TextEditingController();
   final TextEditingController taskTimeController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+
+    if (widget.editedTask != null) {
+      // edit task case
+      taskNameController.text = widget.editedTask!.title;
+      taskDiscriptionController.text = widget.editedTask!.body;
+      taskDateController.text = widget.editedTask!.date;
+      taskTimeController.text = widget.editedTask!.time;
+      _selectedColor = widget.editedTask!.color;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -220,6 +237,31 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                                   date: taskDateController.text,
                                   time: taskTimeController.text));
 
+                          if (widget.editedTask != null) {
+                            LocalVariablesDatabase()
+                                .categoriesList[0]
+                                .data
+                                .remove(widget.editedTask);
+                          }
+
+                          // // another solution
+                          // if (widget.editedTask != null) {
+                          //   widget.editedTask!.title = taskNameController.text;
+                          //   widget.editedTask!.body =
+                          //       taskDiscriptionController.text;
+                          //   widget.editedTask!.date = taskDateController.text;
+                          //   widget.editedTask!.time = taskTimeController.text;
+                          //   widget.editedTask!.color != _selectedColor;
+                          // } else {
+                          //   LocalVariablesDatabase().categoriesList[0].data.add(
+                          //       TaskModel(
+                          //           title: taskNameController.text,
+                          //           body: taskDiscriptionController.text,
+                          //           color: _selectedColor!,
+                          //           date: taskDateController.text,
+                          //           time: taskTimeController.text));
+                          // }
+
                           Navigator.pushAndRemoveUntil(
                               context,
                               MaterialPageRoute<void>(
@@ -229,7 +271,9 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                         }
                       }
                     },
-                    child: Text('Add the task'))
+                    child: Text(widget.editedTask != null
+                        ? 'Edit the task'
+                        : 'Add the task'))
               ],
             ),
           ),

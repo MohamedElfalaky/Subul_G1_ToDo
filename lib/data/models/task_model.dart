@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 
 // Model for individual ToDo item
 class TaskModel {
-  final String title;
-  final String body;
-  final Color color;
-  final String date;
-  final String time;
+  String title;
+  String body;
+  Color color;
+  String date;
+  String time;
 
   TaskModel({
     required this.title,

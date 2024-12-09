@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:subul_g1_todo_app/data/data_sources/local_variables_database.dart';
@@ -116,7 +117,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           ? Center(
                               child: SvgPicture.asset(noNotedPlacholder),
                             )
-                          : _taskCard(taskModel: myDate[index]);
+                          : _taskCard(
+                              taskModel: myDate[index],
+                              context: context,
+                              currentTaskIndex: index);
                     }))
           ],
         ),
@@ -126,7 +130,7 @@ class _HomeScreenState extends State<HomeScreen> {
             Navigator.push(
               context,
               MaterialPageRoute<void>(
-                builder: (BuildContext context) => const AddTaskScreen(),
+                builder: (BuildContext context) => AddTaskScreen(),
               ),
             );
           },
@@ -146,55 +150,132 @@ class _HomeScreenState extends State<HomeScreen> {
         ));
   }
 
-  Container _taskCard({required TaskModel taskModel}) {
-    return Container(
-      margin: EdgeInsets.all(8),
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: taskModel.color.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  taskModel.title,
-                  style: AppTextStyles.titleLarge.copyWith(fontSize: 28),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
-                ),
+  Widget _taskCard(
+      {required TaskModel taskModel,
+      required context,
+      required int currentTaskIndex}) {
+    return Slidable(
+      key: const ValueKey(0),
+      closeOnScroll: true,
+      startActionPane: _selectedCategoryIndex != 0
+          ? null
+          : ActionPane(motion: ScrollMotion(), children: [
+              SlidableAction(
+                onPressed: (context) {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute<void>(
+                      builder: (BuildContext context) =>
+                          AddTaskScreen(editedTask: taskModel),
+                    ),
+                  );
+                },
+                backgroundColor: Color(0xFF0392CF),
+                foregroundColor: Colors.white,
+                icon: Icons.edit,
+                label: 'Edit',
               ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    taskModel.date,
-                    style: AppTextStyles.bodySmall.copyWith(
-                        color: ColorsPalette.blackColor.withOpacity(0.6)),
-                  ),
-                  Text(
-                    taskModel.time,
-                    style: AppTextStyles.bodySmall.copyWith(
-                        color: ColorsPalette.blackColor.withOpacity(0.6)),
-                  ),
-                ],
-              )
-            ],
+            ]),
+      endActionPane: ActionPane(motion: ScrollMotion(), children: [
+        if (_selectedCategoryIndex == 0) ...[
+          SlidableAction(
+            // An action can be bigger than the others.
+            onPressed: (context) {
+              LocalVariablesDatabase().categoriesList[1].data.add(taskModel);
+              LocalVariablesDatabase().categoriesList[0].data.remove(taskModel);
+              setState(() {});
+            },
+            backgroundColor: Color(0xFF7BC043),
+            foregroundColor: Colors.white,
+            icon: Icons.done,
+            label: 'Done',
           ),
-          SizedBox(
-            height: 8,
+          SlidableAction(
+            onPressed: (context) {
+              LocalVariablesDatabase().categoriesList[2].data.add(taskModel);
+              LocalVariablesDatabase().categoriesList[0].data.remove(taskModel);
+              setState(() {});
+            },
+            backgroundColor: Color.fromARGB(255, 207, 3, 3),
+            foregroundColor: Colors.white,
+            icon: Icons.delete,
+            label: 'Delete',
           ),
-          Text(
-            taskModel.body,
-            style: AppTextStyles.bodyMedium,
-            maxLines: 7,
-            overflow: TextOverflow.ellipsis,
-          )
         ],
+        if (_selectedCategoryIndex == 1)
+          SlidableAction(
+            onPressed: (context) {
+              LocalVariablesDatabase().categoriesList[0].data.add(taskModel);
+              LocalVariablesDatabase().categoriesList[1].data.remove(taskModel);
+              setState(() {});
+            },
+            backgroundColor: Color.fromARGB(255, 181, 6, 220),
+            foregroundColor: Colors.white,
+            icon: Icons.undo,
+            label: 'Undo',
+          ),
+        if (_selectedCategoryIndex == 2)
+          SlidableAction(
+            onPressed: (context) {
+              LocalVariablesDatabase().categoriesList[0].data.add(taskModel);
+              LocalVariablesDatabase().categoriesList[2].data.remove(taskModel);
+              setState(() {});
+            },
+            backgroundColor: Color.fromARGB(255, 6, 174, 220),
+            foregroundColor: Colors.white,
+            icon: Icons.undo,
+            label: 'restore',
+          )
+      ]),
+      child: Container(
+        margin: EdgeInsets.all(8),
+        padding: EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: taskModel.color.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    taskModel.title,
+                    style: AppTextStyles.titleLarge.copyWith(fontSize: 28),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      taskModel.date,
+                      style: AppTextStyles.bodySmall.copyWith(
+                          color: ColorsPalette.blackColor.withOpacity(0.6)),
+                    ),
+                    Text(
+                      taskModel.time,
+                      style: AppTextStyles.bodySmall.copyWith(
+                          color: ColorsPalette.blackColor.withOpacity(0.6)),
+                    ),
+                  ],
+                )
+              ],
+            ),
+            SizedBox(
+              height: 8,
+            ),
+            Text(
+              taskModel.body,
+              style: AppTextStyles.bodyMedium,
+              maxLines: 7,
+              overflow: TextOverflow.ellipsis,
+            )
+          ],
+        ),
       ),
     );
   }
