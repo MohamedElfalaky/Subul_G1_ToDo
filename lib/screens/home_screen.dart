@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
 import 'package:subul_g1_todo_app/data/data_sources/local_variables_database.dart';
 import 'package:subul_g1_todo_app/data/models/task_model.dart';
+import 'package:subul_g1_todo_app/main.dart';
 import 'package:subul_g1_todo_app/resources/colors_palette.dart';
 import 'package:collection/collection.dart';
 import 'package:subul_g1_todo_app/resources/icons.dart';
@@ -80,7 +82,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
 
-            SizedBox(
+            const SizedBox(
               height: 16,
             ),
 
@@ -116,7 +118,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           ? Center(
                               child: SvgPicture.asset(noNotedPlacholder),
                             )
-                          : _taskCard(taskModel: myDate[index]);
+                          : _taskCard(
+                              taskModel: myDate[index],
+                              context: context,
+                              currentTaskIndex: index);
                     }))
           ],
         ),
@@ -146,55 +151,156 @@ class _HomeScreenState extends State<HomeScreen> {
         ));
   }
 
-  Container _taskCard({required TaskModel taskModel}) {
-    return Container(
-      margin: EdgeInsets.all(8),
-      padding: EdgeInsets.all(12),
-      decoration: BoxDecoration(
-        color: taskModel.color.withOpacity(0.3),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+  Widget _taskCard(
+      {required TaskModel taskModel,
+      required BuildContext context,
+      required int currentTaskIndex}) {
+    return Slidable(
+      endActionPane: ActionPane(
+        motion: const ScrollMotion(),
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Text(
-                  taskModel.title,
-                  style: AppTextStyles.titleLarge.copyWith(fontSize: 28),
-                  overflow: TextOverflow.ellipsis,
-                  maxLines: 2,
-                ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    taskModel.date,
-                    style: AppTextStyles.bodySmall.copyWith(
-                        color: ColorsPalette.blackColor.withOpacity(0.6)),
+          if (_selectedCategoryIndex == 0) ...[
+            SlidableAction(
+              padding: EdgeInsets.all(12),
+              onPressed: (BuildContext contex) {
+                LocalVariablesDatabase().categoriesList[1].data.add(taskModel);
+
+                LocalVariablesDatabase()
+                    .categoriesList[0]
+                    .data
+                    .remove(taskModel);
+
+                setState(() {});
+              },
+              backgroundColor: Color(0xFF7BC043),
+              foregroundColor: Colors.white,
+              icon: Icons.archive,
+              label: 'Done',
+            ),
+            SlidableAction(
+              padding: EdgeInsets.all(12),
+              onPressed: (context) {
+                LocalVariablesDatabase().categoriesList[2].data.add(taskModel);
+
+                LocalVariablesDatabase()
+                    .categoriesList[0]
+                    .data
+                    .remove(taskModel);
+
+                setState(() {});
+              },
+              backgroundColor: Color.fromARGB(255, 207, 3, 6),
+              foregroundColor: Colors.white,
+              icon: Icons.save,
+              label: 'Delete',
+            ),
+            SlidableAction(
+              padding: EdgeInsets.all(12),
+              onPressed: (context) {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute<void>(
+                    builder: (BuildContext context) =>
+                        AddTaskScreen(editedTask: taskModel),
                   ),
-                  Text(
-                    taskModel.time,
-                    style: AppTextStyles.bodySmall.copyWith(
-                        color: ColorsPalette.blackColor.withOpacity(0.6)),
-                  ),
-                ],
-              )
-            ],
-          ),
-          SizedBox(
-            height: 8,
-          ),
-          Text(
-            taskModel.body,
-            style: AppTextStyles.bodyMedium,
-            maxLines: 7,
-            overflow: TextOverflow.ellipsis,
-          )
+                );
+              },
+              backgroundColor: Color.fromARGB(255, 3, 176, 207),
+              foregroundColor: Colors.white,
+              icon: Icons.edit,
+              label: 'Edit',
+            ),
+          ],
+          if (_selectedCategoryIndex == 1) ...[
+            SlidableAction(
+              padding: EdgeInsets.all(12),
+              onPressed: (context) {
+                LocalVariablesDatabase().categoriesList[0].data.add(taskModel);
+
+                LocalVariablesDatabase()
+                    .categoriesList[1]
+                    .data
+                    .remove(taskModel);
+
+                setState(() {});
+              },
+              backgroundColor: Color.fromARGB(255, 3, 176, 207),
+              foregroundColor: Colors.white,
+              icon: Icons.undo,
+              label: 'Undo',
+            ),
+          ],
+          if (_selectedCategoryIndex == 2) ...[
+            SlidableAction(
+              padding: EdgeInsets.all(12),
+              onPressed: (context) {
+                LocalVariablesDatabase().categoriesList[0].data.add(taskModel);
+
+                LocalVariablesDatabase()
+                    .categoriesList[2]
+                    .data
+                    .remove(taskModel);
+
+                setState(() {});
+              },
+              backgroundColor: Color.fromARGB(255, 3, 207, 91),
+              foregroundColor: Colors.white,
+              icon: Icons.restore,
+              label: 'Restore',
+            ),
+          ]
         ],
+      ),
+      child: Container(
+        margin: const EdgeInsets.all(8),
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: taskModel.color.withOpacity(0.3),
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Text(
+                    taskModel.title,
+                    style: AppTextStyles.titleLarge.copyWith(fontSize: 28),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 2,
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      taskModel.date,
+                      style: AppTextStyles.bodySmall.copyWith(
+                          color: ColorsPalette.blackColor.withOpacity(0.6)),
+                    ),
+                    Text(
+                      taskModel.time,
+                      style: AppTextStyles.bodySmall.copyWith(
+                          color: ColorsPalette.blackColor.withOpacity(0.6)),
+                    ),
+                  ],
+                ),
+                // Text(_selectedCategoryIndex.toString())
+              ],
+            ),
+            const SizedBox(
+              height: 8,
+            ),
+            Text(
+              taskModel.body,
+              style: AppTextStyles.bodyMedium,
+              maxLines: 7,
+              overflow: TextOverflow.ellipsis,
+            )
+          ],
+        ),
       ),
     );
   }
@@ -208,8 +314,8 @@ class _HomeScreenState extends State<HomeScreen> {
         });
       },
       child: Container(
-        padding: EdgeInsets.all(6),
-        margin: EdgeInsets.all(4),
+        padding: const EdgeInsets.all(6),
+        margin: const EdgeInsets.all(4),
         decoration: BoxDecoration(
             color: _selectedCategoryIndex == index
                 ? ColorsPalette.primaryColor

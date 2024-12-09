@@ -26,7 +26,14 @@ class LocalVariablesDatabase {
           date: '04/12',
           time: '10:00 PM'),
     ]),
-    TaskCategoryModel(category: 'Done', data: []),
+    TaskCategoryModel(category: 'Done', data: [
+      TaskModel(
+          title: 'test',
+          body: 'test test',
+          color: Colors.green,
+          date: '04/12',
+          time: '10:00 PM')
+    ]),
     TaskCategoryModel(category: 'Deleted', data: [
       TaskModel(
           title: 'test',
@@ -35,6 +42,13 @@ class LocalVariablesDatabase {
           date: '04/12',
           time: '10:00 PM'),
     ]),
-    TaskCategoryModel(category: 'All', data: []),
+    TaskCategoryModel(category: 'All', data: [
+      TaskModel(
+          title: 'test',
+          body: 'test test',
+          color: Colors.green,
+          date: '04/12',
+          time: '10:00 PM')
+    ]),
   ];
 }

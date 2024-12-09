@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:subul_g1_todo_app/data/data_sources/local_storage_database.dart';
 import 'package:subul_g1_todo_app/resources/colors_palette.dart';
-import 'package:subul_g1_todo_app/resources/text_styles.dart';
-import 'package:subul_g1_todo_app/screens/add_task_scree.dart';
 import 'package:subul_g1_todo_app/screens/home_screen.dart';
-import 'package:subul_g1_todo_app/screens/landing_screen.dart';
 
-void main() {
+void main() async {
+  await HiveDatabase().init();
+
   runApp(const MyApp());
 }
 
