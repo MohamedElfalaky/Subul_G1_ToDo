@@ -1,128 +1,87 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
-import 'package:subul_g1_todo_app/data/data_sources/local_variables_database.dart';
+import 'package:subul_g1_todo_app/data/data_sources/hive_database.dart';
+import 'package:subul_g1_todo_app/data/models/task_category_model.dart';
 import 'package:subul_g1_todo_app/data/models/task_model.dart';
+import 'package:subul_g1_todo_app/presentation/home/cubit/home_cubit.dart';
 import 'package:subul_g1_todo_app/resources/colors_palette.dart';
 import 'package:collection/collection.dart';
 import 'package:subul_g1_todo_app/resources/icons.dart';
 import 'package:subul_g1_todo_app/resources/text_styles.dart';
-import 'package:subul_g1_todo_app/screens/add_task_scree.dart';
+import 'package:subul_g1_todo_app/presentation/add_task/add_task_screen.dart';
 
-class HomeScreen extends StatefulWidget {
+class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
-  State<HomeScreen> createState() => _HomeScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => HomeCubit(),
+      child: HomePage(),
+    );
+  }
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  List<Map<String, String>> generateCurrentWeekDates() {
-    // Find the most recent Sunday from today
-    DateTime today = DateTime.now();
-    DateTime currentWeekSunday =
-        today.subtract(Duration(days: today.weekday % 7));
+class HomePage extends StatelessWidget {
+  HomePage({super.key});
 
-    List<Map<String, String>> weekDates = [];
-    DateTime currentDate = currentWeekSunday;
-
-    // Loop for 7 days starting from the most recent Sunday
-    for (int i = 0; i < 7; i++) {
-      weekDates.add({
-        "day": DateFormat('EEE')
-            .format(currentDate), // Abbreviated day name (e.g., Sun, Mon)
-        "date": DateFormat('d')
-            .format(currentDate), // Day number only (e.g., 4, 5, etc.)
-      });
-      currentDate =
-          currentDate.add(const Duration(days: 1)); // Increment by one day
-    }
-
-    return weekDates;
-  }
-
-  late List<Map<String, String>> weekDates;
-
-  int _selectedDayIndex = 0;
   int _selectedCategoryIndex = 0;
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
-
-    // Get the next Sunday
-
-    // Generate the week starting from that Sunday
-    weekDates = generateCurrentWeekDates();
-  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        body: Column(
-          children: [
-            // date filter
-            Container(
-              decoration: BoxDecoration(
-                color: ColorsPalette.primaryColor.withOpacity(0.2),
-              ),
-              height: 180,
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.all(22),
-                  child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceAround,
-                      children: weekDates.mapIndexed((index, val) {
-                        return _dateCard(dateObject: val, index: index);
-                      }).toList()),
+        body: BlocBuilder<HomeCubit, HomeState>(
+          builder: (context, state) {
+            return Column(
+              children: [
+                SizedBox(
+                  height: 40,
                 ),
-              ),
-            ),
 
-            SizedBox(
-              height: 16,
-            ),
+                // category filter
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: HiveDatabase().getCategories().mapIndexed(
+                    (index, element) {
+                      return categoryCard(
+                          index: index, category: element, context: context);
+                    },
+                  ).toList(),
+                ),
 
-            // category filter
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: LocalVariablesDatabase().categoriesList.mapIndexed(
-                (index, element) {
-                  return categoryCard(index: index, category: element);
-                },
-              ).toList(),
-            ),
+                // place holder
 
-            // place holder
+                Expanded(
+                    child: ListView.builder(
+                        itemCount: HiveDatabase()
+                                .getCategories()[_selectedCategoryIndex]
+                                .data
+                                .isEmpty
+                            ? 1
+                            : HiveDatabase()
+                                .getCategories()[_selectedCategoryIndex]
+                                .data
+                                .length,
+                        itemBuilder: (context, index) {
+                          List<TaskModel> myDate = HiveDatabase()
+                              .getCategories()[_selectedCategoryIndex]
+                              .data;
 
-            Expanded(
-                child: ListView.builder(
-                    itemCount: LocalVariablesDatabase()
-                            .categoriesList[_selectedCategoryIndex]
-                            .data
-                            .isEmpty
-                        ? 1
-                        : LocalVariablesDatabase()
-                            .categoriesList[_selectedCategoryIndex]
-                            .data
-                            .length,
-                    itemBuilder: (context, index) {
-                      List<TaskModel> myDate = LocalVariablesDatabase()
-                          .categoriesList[_selectedCategoryIndex]
-                          .data;
-
-                      return myDate.isEmpty
-                          ? Center(
-                              child: SvgPicture.asset(noNotedPlacholder),
-                            )
-                          : _taskCard(
-                              taskModel: myDate[index],
-                              context: context,
-                              currentTaskIndex: index);
-                    }))
-          ],
+                          return myDate.isEmpty
+                              ? Center(
+                                  child: SvgPicture.asset(noNotedPlacholder),
+                                )
+                              : _taskCard(
+                                  taskModel: myDate[index],
+                                  context: context,
+                                  currentTaskIndex: index);
+                        }))
+              ],
+            );
+          },
         ),
         floatingActionButton: FloatingActionButton(
           shape: const CircleBorder(),
@@ -181,9 +140,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SlidableAction(
             // An action can be bigger than the others.
             onPressed: (context) {
-              LocalVariablesDatabase().categoriesList[1].data.add(taskModel);
-              LocalVariablesDatabase().categoriesList[0].data.remove(taskModel);
-              setState(() {});
+              context.read<HomeCubit>().moveToDone(taskModel);
             },
             backgroundColor: Color(0xFF7BC043),
             foregroundColor: Colors.white,
@@ -192,9 +149,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
           SlidableAction(
             onPressed: (context) {
-              LocalVariablesDatabase().categoriesList[2].data.add(taskModel);
-              LocalVariablesDatabase().categoriesList[0].data.remove(taskModel);
-              setState(() {});
+              context.read<HomeCubit>().deleteTask(taskModel);
             },
             backgroundColor: Color.fromARGB(255, 207, 3, 3),
             foregroundColor: Colors.white,
@@ -205,9 +160,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (_selectedCategoryIndex == 1)
           SlidableAction(
             onPressed: (context) {
-              LocalVariablesDatabase().categoriesList[0].data.add(taskModel);
-              LocalVariablesDatabase().categoriesList[1].data.remove(taskModel);
-              setState(() {});
+              context.read<HomeCubit>().unDoTask(taskModel);
             },
             backgroundColor: Color.fromARGB(255, 181, 6, 220),
             foregroundColor: Colors.white,
@@ -217,9 +170,7 @@ class _HomeScreenState extends State<HomeScreen> {
         if (_selectedCategoryIndex == 2)
           SlidableAction(
             onPressed: (context) {
-              LocalVariablesDatabase().categoriesList[0].data.add(taskModel);
-              LocalVariablesDatabase().categoriesList[2].data.remove(taskModel);
-              setState(() {});
+              context.read<HomeCubit>().unDeleteTask(taskModel);
             },
             backgroundColor: Color.fromARGB(255, 6, 174, 220),
             foregroundColor: Colors.white,
@@ -231,7 +182,7 @@ class _HomeScreenState extends State<HomeScreen> {
         margin: EdgeInsets.all(8),
         padding: EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: taskModel.color.withOpacity(0.3),
+          color: Color(taskModel.color).withOpacity(0.3),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(
@@ -281,12 +232,14 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget categoryCard(
-      {required int index, required TaskCategoryModel category}) {
+      {required int index,
+      required TaskCategoryModel category,
+      required BuildContext context}) {
     return InkWell(
       onTap: () {
-        setState(() {
-          _selectedCategoryIndex = index;
-        });
+        _selectedCategoryIndex = index;
+
+        context.read<HomeCubit>().reRenderHome();
       },
       child: Container(
         padding: EdgeInsets.all(6),
@@ -304,40 +257,6 @@ class _HomeScreenState extends State<HomeScreen> {
               color: _selectedCategoryIndex == index
                   ? ColorsPalette.blackColor
                   : ColorsPalette.blackColor.withOpacity(0.30)),
-        ),
-      ),
-    );
-  }
-
-  Widget _dateCard({required Map dateObject, required int index}) {
-    return InkWell(
-      onTap: () {
-        setState(() {
-          _selectedDayIndex = index;
-        });
-      },
-      child: Container(
-        padding: const EdgeInsets.all(6),
-        decoration: BoxDecoration(
-            color: _selectedDayIndex == index
-                ? ColorsPalette.primaryColor
-                : ColorsPalette.primaryColor.withOpacity(0.4),
-            borderRadius: BorderRadius.circular(12)),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Text(dateObject['day']),
-            const SizedBox(
-              height: 6,
-            ),
-            Container(
-                height: 32,
-                width: 32,
-                decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(100)),
-                child: Center(child: Text(dateObject['date']))),
-          ],
         ),
       ),
     );

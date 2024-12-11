@@ -1,39 +1,59 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import 'package:subul_g1_todo_app/core/globals.dart';
+import 'package:subul_g1_todo_app/data/data_sources/hive_database.dart';
 import 'package:subul_g1_todo_app/data/data_sources/local_variables_database.dart';
 import 'package:subul_g1_todo_app/data/models/task_model.dart';
+import 'package:subul_g1_todo_app/presentation/add_task/cubit/add_task_cubit.dart';
 import 'package:subul_g1_todo_app/resources/colors_palette.dart';
 import 'package:subul_g1_todo_app/resources/icons.dart';
 import 'package:subul_g1_todo_app/resources/text_styles.dart';
-import 'package:subul_g1_todo_app/screens/home_screen.dart';
+import 'package:subul_g1_todo_app/presentation/home/home_screen.dart';
 
-class AddTaskScreen extends StatefulWidget {
+class AddTaskScreen extends StatelessWidget {
   TaskModel? editedTask;
+
   AddTaskScreen({super.key, this.editedTask});
 
   @override
-  State<AddTaskScreen> createState() => _AddTaskScreenState();
+  Widget build(BuildContext context) {
+    return BlocProvider(
+      create: (context) => AddTaskCubit(),
+      child: AddTaskPage(
+        editedTask: editedTask,
+      ),
+    );
+  }
 }
 
-class _AddTaskScreenState extends State<AddTaskScreen> {
-  List cardsColors = [
-    Colors.green,
-    Colors.red,
-    Colors.blue,
-    Colors.black,
-    Colors.yellow,
-    Colors.white,
-    Colors.orange,
-    Colors.pink,
-    Colors.amberAccent,
-    Colors.purple,
-    Colors.amber,
-    Colors.blueAccent,
-    Colors.deepOrangeAccent
+class AddTaskPage extends StatefulWidget {
+  TaskModel? editedTask;
+  AddTaskPage({super.key, this.editedTask});
+
+  @override
+  State<AddTaskPage> createState() => _AddTaskPageState();
+}
+
+class _AddTaskPageState extends State<AddTaskPage> {
+  List<int> cardsColors = [
+    0xFF00FF00, // Green
+    0xFFFF0000, // Red
+    0xFF0000FF, // Blue
+    0xFF000000, // Black
+    0xFFFFFF00, // Yellow
+    0xFFFFFFFF, // White
+    0xFFFFA500, // Orange
+    0xFFFFC0CB, // Pink
+    0xFFFFE082, // AmberAccent
+    0xFF800080, // Purple
+    0xFFFFC107, // Amber
+    0xFF448AFF, // BlueAccent
+    0xFFFF7043, // DeepOrangeAccent
   ];
 
-  Color? _selectedColor;
+  int? _selectedColor;
 
   bool? selectedColorError;
   final TextEditingController taskNameController = TextEditingController();
@@ -122,41 +142,52 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                 ),
                 SingleChildScrollView(
                   scrollDirection: Axis.horizontal,
-                  child: Row(
-                    children: [
-                      for (int i = 0; i < cardsColors.length; i++)
-                        InkWell(
-                          onTap: () {
-                            setState(() {
-                              _selectedColor = cardsColors[i];
-                            });
-                          },
-                          child: Container(
-                            margin: EdgeInsets.all(4),
-                            height: 32,
-                            width: 32,
-                            decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(100),
-                                border: Border.all(
-                                    color: _selectedColor == cardsColors[i]
-                                        ? ColorsPalette.whiteColor
-                                        : Colors.transparent,
-                                    width: 4),
-                                color: cardsColors[i]),
+                  child: BlocBuilder<AddTaskCubit, AddTaskState>(
+                    builder: (context, state) {
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              for (int i = 0; i < cardsColors.length; i++)
+                                InkWell(
+                                  onTap: () {
+                                    _selectedColor = cardsColors[i];
+
+                                    context.read<AddTaskCubit>().changeState();
+                                  },
+                                  child: Container(
+                                    margin: EdgeInsets.all(4),
+                                    height: 32,
+                                    width: 32,
+                                    decoration: BoxDecoration(
+                                        borderRadius:
+                                            BorderRadius.circular(100),
+                                        border: Border.all(
+                                            color:
+                                                _selectedColor == cardsColors[i]
+                                                    ? ColorsPalette.whiteColor
+                                                    : Colors.transparent,
+                                            width: 4),
+                                        color: Color(cardsColors[i])),
+                                  ),
+                                )
+                            ],
                           ),
-                        )
-                    ],
+                          if (selectedColorError == true)
+                            Align(
+                              alignment: AlignmentDirectional.centerStart,
+                              child: Text(
+                                'Color cant be empty',
+                                style: AppTextStyles.bodySmall
+                                    .copyWith(color: Colors.red),
+                              ),
+                            ),
+                        ],
+                      );
+                    },
                   ),
                 ),
-                if (selectedColorError == true)
-                  Align(
-                    alignment: AlignmentDirectional.centerStart,
-                    child: Text(
-                      'Color cant be empty',
-                      style:
-                          AppTextStyles.bodySmall.copyWith(color: Colors.red),
-                    ),
-                  ),
                 SizedBox(
                   height: 32,
                 ),
@@ -224,50 +255,21 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                     onPressed: () {
                       if (_formKey.currentState!.validate()) {
                         if (_selectedColor == null) {
-                          setState(() {
-                            selectedColorError = true;
-                          });
+                          selectedColorError = true;
+
+                          context.read<AddTaskCubit>().changeState();
                         } else {
                           selectedColorError = false;
-                          LocalVariablesDatabase().categoriesList[0].data.add(
-                              TaskModel(
-                                  title: taskNameController.text,
-                                  body: taskDiscriptionController.text,
-                                  color: _selectedColor!,
-                                  date: taskDateController.text,
-                                  time: taskTimeController.text));
 
-                          if (widget.editedTask != null) {
-                            LocalVariablesDatabase()
-                                .categoriesList[0]
-                                .data
-                                .remove(widget.editedTask);
-                          }
+                          TaskModel newTask = TaskModel(
+                              title: taskNameController.text,
+                              body: taskDiscriptionController.text,
+                              color: _selectedColor!,
+                              date: taskDateController.text,
+                              time: taskTimeController.text);
 
-                          // // another solution
-                          // if (widget.editedTask != null) {
-                          //   widget.editedTask!.title = taskNameController.text;
-                          //   widget.editedTask!.body =
-                          //       taskDiscriptionController.text;
-                          //   widget.editedTask!.date = taskDateController.text;
-                          //   widget.editedTask!.time = taskTimeController.text;
-                          //   widget.editedTask!.color != _selectedColor;
-                          // } else {
-                          //   LocalVariablesDatabase().categoriesList[0].data.add(
-                          //       TaskModel(
-                          //           title: taskNameController.text,
-                          //           body: taskDiscriptionController.text,
-                          //           color: _selectedColor!,
-                          //           date: taskDateController.text,
-                          //           time: taskTimeController.text));
-                          // }
-
-                          Navigator.pushAndRemoveUntil(
-                              context,
-                              MaterialPageRoute<void>(
-                                  builder: (BuildContext context) =>
-                                      const HomeScreen()),
-                              ModalRoute.withName('//'));
+                          context.read<AddTaskCubit>().addOrEditTaskByHive(
+                              newTask: newTask, editedTask: widget.editedTask);
                         }
                       }
                     },

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:subul_g1_todo_app/data/models/task_category_model.dart';
 import 'package:subul_g1_todo_app/data/models/task_model.dart';
 
 class LocalVariablesDatabase {
@@ -16,13 +17,13 @@ class LocalVariablesDatabase {
       TaskModel(
           title: 'go to gym',
           body: 'i must go to the gym today',
-          color: Colors.blue,
+          color: 0xFFFFFF00,
           date: '04/12',
           time: '10:00 PM'),
       TaskModel(
           title: 'test',
           body: 'test test',
-          color: Colors.red,
+          color: 0xFFFFFF70,
           date: '04/12',
           time: '10:00 PM'),
     ]),
@@ -30,7 +31,7 @@ class LocalVariablesDatabase {
       TaskModel(
           title: 'test',
           body: 'test test',
-          color: Colors.green,
+          color: 0xFFFFFF30,
           date: '04/12',
           time: '10:00 PM'),
     ]),
@@ -38,7 +39,7 @@ class LocalVariablesDatabase {
       TaskModel(
           title: 'test',
           body: 'test test',
-          color: Colors.green,
+          color: 0xFFFFFF00,
           date: '04/12',
           time: '10:00 PM'),
     ]),
