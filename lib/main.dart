@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:subul_g1_todo_app/data/data_sources/local_storage_database.dart';
+import 'package:subul_g1_todo_app/data/data_sources/hive_database.dart';
 import 'package:subul_g1_todo_app/resources/colors_palette.dart';
 import 'package:subul_g1_todo_app/screens/home_screen.dart';
 
 void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   await HiveDatabase().init();
 
   runApp(const MyApp());

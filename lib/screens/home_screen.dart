@@ -2,7 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import 'package:subul_g1_todo_app/data/data_sources/hive_database.dart';
 import 'package:subul_g1_todo_app/data/data_sources/local_variables_database.dart';
+import 'package:subul_g1_todo_app/data/models/hive_models/task_category_model.dart';
+import 'package:subul_g1_todo_app/data/models/hive_models/task_model.dart';
 import 'package:subul_g1_todo_app/data/models/task_model.dart';
 import 'package:subul_g1_todo_app/main.dart';
 import 'package:subul_g1_todo_app/resources/colors_palette.dart';
@@ -89,7 +92,7 @@ class _HomeScreenState extends State<HomeScreen> {
             // category filter
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
-              children: LocalVariablesDatabase().categoriesList.mapIndexed(
+              children: HiveDatabase().getCategories().mapIndexed(
                 (index, element) {
                   return categoryCard(index: index, category: element);
                 },
@@ -100,18 +103,18 @@ class _HomeScreenState extends State<HomeScreen> {
 
             Expanded(
                 child: ListView.builder(
-                    itemCount: LocalVariablesDatabase()
-                            .categoriesList[_selectedCategoryIndex]
+                    itemCount: HiveDatabase()
+                            .getCategories()[_selectedCategoryIndex]
                             .data
                             .isEmpty
                         ? 1
-                        : LocalVariablesDatabase()
-                            .categoriesList[_selectedCategoryIndex]
+                        : HiveDatabase()
+                            .getCategories()[_selectedCategoryIndex]
                             .data
                             .length,
                     itemBuilder: (context, index) {
-                      List<TaskModel> myDate = LocalVariablesDatabase()
-                          .categoriesList[_selectedCategoryIndex]
+                      List<TaskModel> myDate = HiveDatabase()
+                          .getCategories()[_selectedCategoryIndex]
                           .data;
 
                       return myDate.isEmpty
@@ -163,12 +166,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SlidableAction(
               padding: EdgeInsets.all(12),
               onPressed: (BuildContext contex) {
-                LocalVariablesDatabase().categoriesList[1].data.add(taskModel);
-
-                LocalVariablesDatabase()
-                    .categoriesList[0]
-                    .data
-                    .remove(taskModel);
+                HiveDatabase().moveToDone(taskModel);
 
                 setState(() {});
               },
@@ -180,12 +178,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SlidableAction(
               padding: EdgeInsets.all(12),
               onPressed: (context) {
-                LocalVariablesDatabase().categoriesList[2].data.add(taskModel);
-
-                LocalVariablesDatabase()
-                    .categoriesList[0]
-                    .data
-                    .remove(taskModel);
+                HiveDatabase().deleteTask(taskModel);
 
                 setState(() {});
               },
@@ -215,12 +208,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SlidableAction(
               padding: EdgeInsets.all(12),
               onPressed: (context) {
-                LocalVariablesDatabase().categoriesList[0].data.add(taskModel);
-
-                LocalVariablesDatabase()
-                    .categoriesList[1]
-                    .data
-                    .remove(taskModel);
+                HiveDatabase().unDoTask(taskModel);
 
                 setState(() {});
               },
@@ -234,12 +222,7 @@ class _HomeScreenState extends State<HomeScreen> {
             SlidableAction(
               padding: EdgeInsets.all(12),
               onPressed: (context) {
-                LocalVariablesDatabase().categoriesList[0].data.add(taskModel);
-
-                LocalVariablesDatabase()
-                    .categoriesList[2]
-                    .data
-                    .remove(taskModel);
+                HiveDatabase().unDeleteTask(taskModel);
 
                 setState(() {});
               },
@@ -255,7 +238,7 @@ class _HomeScreenState extends State<HomeScreen> {
         margin: const EdgeInsets.all(8),
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: taskModel.color.withOpacity(0.3),
+          color: Color(taskModel.color).withOpacity(0.3),
           borderRadius: BorderRadius.circular(16),
         ),
         child: Column(

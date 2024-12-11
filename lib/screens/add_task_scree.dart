@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:intl/intl.dart';
+import 'package:subul_g1_todo_app/data/data_sources/hive_database.dart';
 import 'package:subul_g1_todo_app/data/data_sources/local_variables_database.dart';
+import 'package:subul_g1_todo_app/data/models/hive_models/task_model.dart';
 import 'package:subul_g1_todo_app/data/models/task_model.dart';
 import 'package:subul_g1_todo_app/resources/colors_palette.dart';
 import 'package:subul_g1_todo_app/resources/icons.dart';
@@ -17,23 +19,23 @@ class AddTaskScreen extends StatefulWidget {
 }
 
 class _AddTaskScreenState extends State<AddTaskScreen> {
-  List cardsColors = [
-    Colors.green,
-    Colors.red,
-    Colors.blue,
-    Colors.black,
-    Colors.yellow,
-    Colors.white,
-    Colors.orange,
-    Colors.pink,
-    Colors.amberAccent,
-    Colors.purple,
-    Colors.amber,
-    Colors.blueAccent,
-    Colors.deepOrangeAccent
+  List<int> cardsColors = [
+    0xFF008000, // green
+    0xFFFF0000, // red
+    0xFF0000FF, // blue
+    0xFF000000, // black
+    0xFFFFFF00, // yellow
+    0xFFFFFFFF, // white
+    0xFFFFA500, // orange
+    0xFFFFC0CB, // pink
+    0xFFFFD700, // amberAccent
+    0xFF800080, // purple
+    0xFFFFBF00, // amber
+    0xFFADD8E6, // blueAccent
+    0xFFFF4500 // deepOrangeAccent
   ];
 
-  Color? _selectedColor;
+  int? _selectedColor;
 
   bool? selectedColorError;
   final TextEditingController taskNameController = TextEditingController();
@@ -142,7 +144,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                                         ? ColorsPalette.whiteColor
                                         : Colors.transparent,
                                     width: 4),
-                                color: cardsColors[i]),
+                                color: Color(cardsColors[i])),
                           ),
                         )
                     ],
@@ -231,20 +233,15 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                           selectedColorError = false;
 
                           if (widget.editedTask == null) {
-                            LocalVariablesDatabase().categoriesList[0].data.add(
-                                TaskModel(
-                                    title: taskNameController.text,
-                                    body: taskDiscriptionController.text,
-                                    color: _selectedColor!,
-                                    date: taskDateController.text,
-                                    time: taskTimeController.text));
+                            HiveDatabase().addTask(TaskModel(
+                                title: taskNameController.text,
+                                body: taskDiscriptionController.text,
+                                color: _selectedColor!,
+                                date: taskDateController.text,
+                                time: taskTimeController.text));
                           } else {
-                            LocalVariablesDatabase()
-                                .categoriesList[0]
-                                .data
-                                .remove(widget.editedTask);
-
-                            LocalVariablesDatabase().categoriesList[0].data.add(
+                            HiveDatabase().editTask(
+                                widget.editedTask!,
                                 TaskModel(
                                     title: taskNameController.text,
                                     body: taskDiscriptionController.text,
@@ -262,7 +259,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
                         }
                       }
                     },
-                    child: Text(widget.editedTask != null
+                    child: Text(widget.editedTask == null
                         ? 'Add the task'
                         : 'Edit the task'))
               ],

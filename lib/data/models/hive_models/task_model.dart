@@ -1,4 +1,3 @@
-import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 
 part 'task_model.g.dart'; // Make sure to generate this file using build_runner
@@ -12,7 +11,7 @@ class TaskModel {
   String body;
 
   @HiveField(2)
-  Color color;
+  int color;
 
   @HiveField(3)
   String date;
