@@ -5,6 +5,7 @@ import 'package:subul_g1_todo_app/data/data_sources/hive_database.dart';
 import 'package:subul_g1_todo_app/firebase_options.dart';
 import 'package:subul_g1_todo_app/presentation/home/home_screen.dart';
 import 'package:subul_g1_todo_app/presentation/registration/registration_screen.dart';
+import 'package:subul_g1_todo_app/presentation/test_cubit/test_view.dart';
 import 'package:subul_g1_todo_app/resources/colors_palette.dart';
 
 void main() async {
@@ -50,7 +51,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const HomeScreen(),
+      home: const TestCubitScreen(),
     );
   }
 }

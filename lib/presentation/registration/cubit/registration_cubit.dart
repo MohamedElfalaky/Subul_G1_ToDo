@@ -12,6 +12,7 @@ import 'package:image_picker/image_picker.dart';
 import 'package:meta/meta.dart';
 import 'package:subul_g1_todo_app/core/globals.dart';
 import 'package:subul_g1_todo_app/core/my_application.dart';
+import 'package:subul_g1_todo_app/core/services/firebase_auth.dart';
 import 'package:subul_g1_todo_app/main.dart';
 import 'package:subul_g1_todo_app/presentation/home/home_screen.dart';
 
@@ -41,9 +42,13 @@ class RegistrationCubit extends Cubit<RegistrationState> {
     MyApplication.showLoadingDialog(Globals.navigatorKey.currentState!.context);
 
     try {
-      UserCredential userCredential = await FirebaseAuth.instance
-          .createUserWithEmailAndPassword(
-              email: mailController.text, password: passwordController.text);
+      UserCredential userCredential = await FirebaseAuthService()
+          .getUserCredintial(
+              mail: mailController.text, password: passwordController.text);
+
+      // await FirebaseAuth.instance
+      //     .createUserWithEmailAndPassword(
+      //         email: mailController.text, password: passwordController.text);
 
       // Upload Profile Image if available
       String? imageUrl;
