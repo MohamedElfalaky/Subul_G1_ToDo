@@ -268,7 +268,7 @@ class _AddTaskPageState extends State<AddTaskPage> {
                               date: taskDateController.text,
                               time: taskTimeController.text);
 
-                          context.read<AddTaskCubit>().addOrEditTaskByHive(
+                          context.read<AddTaskCubit>().addToFireStore(
                               newTask: newTask, editedTask: widget.editedTask);
                         }
                       }

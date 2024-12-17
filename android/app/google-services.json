@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "351251165322",
+    "project_id": "subul-todo-app",
+    "storage_bucket": "subul-todo-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:351251165322:android:98402b4521294a4f123d73",
+        "android_client_info": {
+          "package_name": "com.example.subul_g1_todo_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB-Tj5Ab_3XzXoU3-86c6biKwUYc9p_FqQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

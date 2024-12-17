@@ -25,62 +25,32 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   HomePage({super.key});
 
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
   int _selectedCategoryIndex = 0;
+
+  late List<Widget> _screens;
+  int _currentPageIndex = 0;
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    _screens = [homeView(context), profileView(context)];
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
         body: BlocBuilder<HomeCubit, HomeState>(
           builder: (context, state) {
-            return Column(
-              children: [
-                SizedBox(
-                  height: 40,
-                ),
-
-                // category filter
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: HiveDatabase().getCategories().mapIndexed(
-                    (index, element) {
-                      return categoryCard(
-                          index: index, category: element, context: context);
-                    },
-                  ).toList(),
-                ),
-
-                // place holder
-
-                Expanded(
-                    child: ListView.builder(
-                        itemCount: HiveDatabase()
-                                .getCategories()[_selectedCategoryIndex]
-                                .data
-                                .isEmpty
-                            ? 1
-                            : HiveDatabase()
-                                .getCategories()[_selectedCategoryIndex]
-                                .data
-                                .length,
-                        itemBuilder: (context, index) {
-                          List<TaskModel> myDate = HiveDatabase()
-                              .getCategories()[_selectedCategoryIndex]
-                              .data;
-
-                          return myDate.isEmpty
-                              ? Center(
-                                  child: SvgPicture.asset(noNotedPlacholder),
-                                )
-                              : _taskCard(
-                                  taskModel: myDate[index],
-                                  context: context,
-                                  currentTaskIndex: index);
-                        }))
-              ],
-            );
+            return _screens[_currentPageIndex];
           },
         ),
         floatingActionButton: FloatingActionButton(
@@ -96,6 +66,12 @@ class HomePage extends StatelessWidget {
           child: const Icon(Icons.add, size: 28),
         ),
         bottomNavigationBar: BottomNavigationBar(
+          currentIndex: _currentPageIndex,
+          onTap: (value) {
+            setState(() {
+              _currentPageIndex = value;
+            });
+          },
           items: const [
             BottomNavigationBarItem(
               icon: Icon(Icons.calendar_today_outlined),
@@ -107,6 +83,88 @@ class HomePage extends StatelessWidget {
             ),
           ],
         ));
+  }
+
+  Column homeView(BuildContext context) {
+    return Column(
+      children: [
+        SizedBox(
+          height: 40,
+        ),
+
+        // category filter
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: HiveDatabase().getCategories().mapIndexed(
+            (index, element) {
+              return categoryCard(
+                  index: index, category: element, context: context);
+            },
+          ).toList(),
+        ),
+
+        // place holder
+
+        Expanded(
+            child: ListView.builder(
+                itemCount: HiveDatabase()
+                        .getCategories()[_selectedCategoryIndex]
+                        .data
+                        .isEmpty
+                    ? 1
+                    : HiveDatabase()
+                        .getCategories()[_selectedCategoryIndex]
+                        .data
+                        .length,
+                itemBuilder: (context, index) {
+                  List<TaskModel> myDate = HiveDatabase()
+                      .getCategories()[_selectedCategoryIndex]
+                      .data;
+
+                  return myDate.isEmpty
+                      ? Center(
+                          child: SvgPicture.asset(noNotedPlacholder),
+                        )
+                      : _taskCard(
+                          taskModel: myDate[index],
+                          context: context,
+                          currentTaskIndex: index);
+                }))
+      ],
+    );
+  }
+
+  profileView(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(22),
+      child: Column(
+        spacing: 12,
+        children: [
+          SizedBox(
+            height: 30,
+          ),
+          Text('Profile'),
+          SizedBox(
+            height: 20,
+          ),
+          ListTile(
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            tileColor: ColorsPalette.primaryColor.withOpacity(0.5),
+            onTap: () {},
+            title: Text('Profile'),
+          ),
+          ListTile(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16)),
+              tileColor: ColorsPalette.primaryColor.withOpacity(0.5),
+              onTap: () {
+                context.read<HomeCubit>().logOut(context);
+              },
+              title: Text('Logout')),
+        ],
+      ),
+    );
   }
 
   Widget _taskCard(

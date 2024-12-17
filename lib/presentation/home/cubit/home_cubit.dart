@@ -1,8 +1,13 @@
 import 'package:bloc/bloc.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
+import 'package:subul_g1_todo_app/core/globals.dart';
+import 'package:subul_g1_todo_app/core/my_application.dart';
 import 'package:subul_g1_todo_app/data/data_sources/hive_database.dart';
 import 'package:subul_g1_todo_app/data/data_sources/local_variables_database.dart';
 import 'package:subul_g1_todo_app/data/models/task_model.dart';
+import 'package:subul_g1_todo_app/presentation/login/login_screen.dart';
 
 part 'home_state.dart';
 
@@ -47,5 +52,19 @@ class HomeCubit extends Cubit<HomeState> {
 
   void reRenderHome() {
     emit(HomeDataChanged());
+  }
+
+  logOut(BuildContext context) async {
+    // uId = null;
+
+    MyApplication.showLoadingDialog(Globals.navigatorKey.currentContext!);
+
+    await FirebaseAuth.instance.signOut();
+
+    Navigator.pop(Globals.navigatorKey.currentContext!);
+
+    MyApplication.showToastView(message: "Logged out successfully");
+    MyApplication.navigateToRemove(
+        Globals.navigatorKey.currentContext!, LoginScreen());
   }
 }

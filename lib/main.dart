@@ -1,14 +1,17 @@
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:subul_g1_todo_app/core/globals.dart';
 import 'package:subul_g1_todo_app/data/data_sources/hive_database.dart';
-import 'package:subul_g1_todo_app/resources/colors_palette.dart';
-import 'package:subul_g1_todo_app/resources/text_styles.dart';
-import 'package:subul_g1_todo_app/presentation/add_task/add_task_screen.dart';
+import 'package:subul_g1_todo_app/firebase_options.dart';
 import 'package:subul_g1_todo_app/presentation/home/home_screen.dart';
-import 'package:subul_g1_todo_app/presentation/landing/landing_screen.dart';
+import 'package:subul_g1_todo_app/presentation/registration/registration_screen.dart';
+import 'package:subul_g1_todo_app/resources/colors_palette.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   await HiveDatabase().initHive();
 
   runApp(const MyApp());

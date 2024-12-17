@@ -1,4 +1,6 @@
 import 'package:bloc/bloc.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:meta/meta.dart';
 import 'package:subul_g1_todo_app/core/globals.dart';
@@ -38,6 +40,28 @@ class AddTaskCubit extends Cubit<AddTaskState> {
     } else {
       HiveDatabase().addTask(newTask);
     }
+
+    Navigator.pushAndRemoveUntil(
+        Globals.navigatorKey.currentContext!,
+        MaterialPageRoute<void>(
+            builder: (BuildContext context) => const HomeScreen()),
+        ModalRoute.withName('//'));
+  }
+
+  void addToFireStore(
+      {required TaskModel newTask, TaskModel? editedTask}) async {
+    await FirebaseFirestore.instance
+        .collection('Users') // Root Collection
+        .doc(FirebaseAuth.instance.currentUser!.email) // Document for the user
+        .collection('Tasks') // Subcollection for tasks
+        .add({
+      "title": newTask.title,
+      "body": newTask.body,
+      "date": newTask.date,
+      "time": newTask.time,
+      "color": newTask.color,
+      "status": "todo"
+    });
 
     Navigator.pushAndRemoveUntil(
         Globals.navigatorKey.currentContext!,
